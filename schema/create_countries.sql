@@ -21,13 +21,15 @@ create table if not exists countries(
     country_name text not null
 );
 
+-- Source cannot be deleted as long as it has series attached.
+-- When source is deleted, waves metadata is deleted with it.
 create table if not exists sources(
     source_code text primary key,
     source_name text not null unique
 );
 
 -- waves uses a surrogate key and not a composite natural key because
--- they encopass a lot of observations (broad metadata entities) and
+-- they encompass a lot of observations (broad metadata entities) and
 -- to avoid adding two text columns to series_values table (the largest one)
 -- especially for observations not organized in waves
 create table if not exists waves(
@@ -45,7 +47,10 @@ create table if not exists waves(
     waves_date_precision text not null
         check(waves_date_precision in ('year', 'month', 'day')),
     source_code text not null,
-    foreign key (source_code) references sources(source_code),
+    -- when a source is deleted, its waves go with it
+    foreign key (source_code)
+        references sources(source_code)
+        on delete cascade,
     unique(wave_name, source_code),
     -- Required so series_values can reference (wave_id, source_code)
     -- and enforce that wave and observation belong to the same source.
@@ -72,7 +77,10 @@ create table if not exists series(
     series_id text not null,
     series_description text not null,
     source_code text not null,
-    foreign key(source_code) references sources(source_code),
+    -- A source cannot be deleted when it has a series attached
+    foreign key(source_code)
+        references sources(source_code)
+        on delete restrict,
     primary key(series_id, source_code)
 );
 
@@ -92,10 +100,21 @@ create table if not exists series_values(
     -- wave_id is nullable because not every source organizes observations into waves.
     -- When present, wave_id references waves and identifies the survey/release batch.
     wave_id integer,
-    foreign key(series_id, source_code) references series(series_id, source_code),
-    foreign key(iso3_id) references countries(iso3_id),
+    -- Without series_id observation is meaningless and it is removed when series is deleted
+    foreign key(series_id, source_code)
+        references series(series_id, source_code)
+        on delete cascade,
+    -- without country observation loses meaning, so it is removed when country is deleted
+    foreign key(iso3_id) 
+        references countries(iso3_id)
+        on delete cascade,
     -- Composite FK enforces that the wave belongs to the same source as the series value.
-    foreign key(wave_id, source_code) references waves(wave_id, source_code),
+    -- Observation is meaningful as long as it has series_id and country attached
+    -- but detaching from a wave will not cause loss of meaning.
+    -- Best option: on delete set null but it will try to set a source code to null as well.
+    foreign key(wave_id, source_code)
+        references waves(wave_id, source_code)
+        on delete restrict,
     unique(series_id, source_code, iso3_id, observation_date),
     check((sv_date_precision = 'year' and substr(observation_date, 6, 5) = '01-01')
             or (sv_date_precision = 'month' and substr(observation_date, 9, 2) = '01')
