@@ -1,5 +1,11 @@
 import sqlite3
 import pandas as pd
+import geopandas as gpd
+import numpy as np
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
+import matplotlib.patches as mpatches
 
 def run_sql(database, query_file):
     with sqlite3.connect(database) as conn:
@@ -81,3 +87,176 @@ def divide_range_into_buckets(no_buckets: int,
     edges = [i * bucket_size for i in range(no_buckets + 1)]
     
     return clusters.astype(int), edges
+
+def plot_cluster_map(
+    cluster_series: pd.Series,
+    labels: dict[int, str],
+    palette: dict[int, str],
+    title: str | None = None,
+    legend_orientation: str  = 'vertical', # horizontal or vertical
+    save_file_name: str | None = None
+):
+    """
+    Plot a world choropleth map of categorical cluster assignments.
+
+    Countries are colored according to cluster membership using a
+    user-supplied categorical palette. Countries without available
+    observations are shown separately using a hatched grey fill.
+
+    Parameters
+    ----------
+    cluster_series : pd.Series
+        Series mapping ISO3 country codes to integer cluster labels.
+        The index is expected to contain ISO3 country codes matching
+        the `SOV_A3` field of the Natural Earth dataset.
+
+    labels : dict[int, str]
+        Mapping from cluster identifier to legend label.
+
+    palette : dict[int, str]
+        Mapping from cluster identifier to color hex code.
+
+    title : str, optional
+        Figure title.
+
+    legend_orientation : str, default 'vertical'
+        Legend layout orientation. Currently only vertical layout
+        is implemented.
+
+    save_file_name : str, optional
+        If provided, save the figure to this path.
+
+    Notes
+    -----
+    - Uses the Natural Earth 1:10m country dataset.
+    - Uses Robinson projection (`ESRI:54030`).
+    - Cluster identifiers are assumed to be integers.
+    - Missing observations are displayed separately and are not
+      expected in `labels` or `palette`.
+    - The function displays and closes the matplotlib figure,
+      making it suitable for repeated use inside loops.
+    """
+    # clusters are assumed to be integer
+    # which isn't checked
+    categories = np.sort(cluster_series.dropna().astype(int).unique())
+
+    assert set(categories) <= set(labels.keys()), (
+        f"Unlabeled categories found: {set(categories) - set(labels.keys())}"
+    )
+
+    assert set(categories) <= set(palette.keys()), (
+        f"Categories lacking color in palette found: {set(categories) - set(palette.keys())}"
+    )
+
+    assert set(labels.keys()) == set(palette.keys()), (
+        f"Clusters in labels and palette not equal"
+    )
+
+    world_file = '../data/raw/geodata/ne_10m_admin_0_countries.zip'
+
+    # import world data to draw countries
+    world = gpd.read_file(world_file)
+    assert not world.empty
+
+    # choose a projection
+    projection = "ESRI:54030"    # Robinson
+    world = world.to_crs(projection)
+
+    # prepare dataframe for plotting
+    world["_cluster"] = world["SOV_A3"].map(cluster_series)
+
+    cmap = ListedColormap(
+        [palette[c] for c in categories]
+    )
+
+    # plot
+    figsize = (14, 6.5)
+    background_color = "ghostwhite"
+    
+    border_color = "#F4EFE8"
+    border_width = 0.15
+    
+    fig, ax = plt.subplots(figsize = figsize, facecolor = background_color)
+    ax.set_facecolor(background_color)
+    
+    world.plot(
+            ax = ax,
+            column = '_cluster',
+            categorical = True,
+            cmap = cmap,
+            missing_kwds = {
+                "color": "lightgrey",
+                "edgecolor": "darkgrey",
+                "hatch": "///",
+                "label": "Missing values",
+            },
+            edgecolor = border_color,
+            linewidth = border_width
+        )
+    
+    if title:
+            ax.set_title(title, fontsize = 16, pad = 14)
+    
+    # prepare the legend: clusters
+    handles = [
+        mpatches.Patch(
+            facecolor = palette[cat],
+            edgecolor = "none",
+            label = labels[int(cat)]
+        )
+        for cat in categories
+    ]
+    
+    # prepare legend: missing values
+    handles.append(
+        mpatches.Patch(
+            facecolor="lightgrey",
+            edgecolor="darkgrey",
+            hatch="///",
+            label="Missing values"
+        )
+    )
+    
+    # vertical stacked legend
+    ax.legend(
+        handles = handles,
+        loc = "lower left",
+        frameon = False,
+        fontsize = 10
+    )
+    
+    '''
+    # horizontal legend
+    ax.legend(
+        handles = handles,
+        loc = 'lower center',
+        bbox_to_anchor = (0.5, -0.08),
+        ncol = len(categories) + 2,
+        frameon = False,
+        fontsize = 10,
+        handlelength = 1.8,
+        columnspacing = 1.4
+    )
+    '''
+    # the pretty stuff
+    ax.set_axis_off()
+    
+    # crop out Antarctica
+    ylim=(-6_500_000, 8_500_000)
+    ax.set_ylim(*ylim)
+    
+    xlim = (-15_000_000, 18_000_000)
+    ax.set_xlim(*xlim)
+    
+    plt.tight_layout(pad = 0)
+
+    if save_file_name:
+        fig.savefig(
+            save_file_name,
+            dpi=300,
+            bbox_inches="tight",
+            facecolor=fig.get_facecolor()
+        )
+    
+    plt.show()
+    plt.close(fig)
