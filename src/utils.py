@@ -92,6 +92,7 @@ def plot_cluster_map(
     cluster_series: pd.Series,
     labels: dict[int, str],
     palette: dict[int, str],
+    projection: str = "ESRI:54030",    # default projection Robinson
     title: str | None = None,
     legend_orientation: str  = 'vertical', # horizontal or vertical
     save_file_name: str | None = None
@@ -115,6 +116,9 @@ def plot_cluster_map(
 
     palette : dict[int, str]
         Mapping from cluster identifier to color hex code.
+
+    projection : str, default "ESRI:54030"
+        CRS projection used for rendering the map.
 
     title : str, optional
         Figure title.
@@ -157,9 +161,11 @@ def plot_cluster_map(
     # import world data to draw countries
     world = gpd.read_file(world_file)
     assert not world.empty
+    
+    # drop Antarctica
+    world = world[world["CONTINENT"] != "Antarctica"].copy()
 
     # choose a projection
-    projection = "ESRI:54030"    # Robinson
     world = world.to_crs(projection)
 
     # prepare dataframe for plotting
@@ -242,11 +248,18 @@ def plot_cluster_map(
     ax.set_axis_off()
     
     # crop out Antarctica
-    ylim=(-6_500_000, 8_500_000)
-    ax.set_ylim(*ylim)
-    
-    xlim = (-15_000_000, 18_000_000)
-    ax.set_xlim(*xlim)
+    #ylim=(-6_000_000, 8_500_000)
+    #ax.set_ylim(*ylim)
+   
+    # reduce empty space on the sides 
+    #xlim = (-14_000_000, 16_000_000)
+    #ax.set_xlim(*xlim)
+
+    # force the axes to the projected world bounds
+    xmin, ymin, xmax, ymax = world.total_bounds
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
+    ax.margins(0)
     
     plt.tight_layout(pad = 0)
 
