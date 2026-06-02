@@ -273,3 +273,56 @@ def plot_cluster_map(
     
     plt.show()
     plt.close(fig)
+
+def pretty_histogram(data_column: pd.Series,
+                    bins_no: int,
+                    title: str | None = None,
+                    x_axis_title: str | None = None,
+                    y_axis_title: str | None = None,
+                    save_file_name: str | None = None):
+    
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+
+    ax.hist(
+        data_column,
+        color = '#708A81',
+        bins = bins_no
+    )
+
+    # labels
+    ax.set_title(
+        title,
+        fontsize=14,
+        pad=12
+    )
+    
+    ax.set_xlabel(
+        x_axis_title,
+        fontsize=11
+    )
+    
+    ax.set_ylabel(
+        y_axis_title,
+        fontsize=11
+    )
+
+    # styling
+    for spine in ['top', 'right']:
+        ax.spines[spine].set_visible(False)
+    
+    ax.grid(
+        True,
+        color = '#D2CCC3',
+        linewidth = 0.8,
+        alpha = 0.7
+    )
+
+    # save the plot
+    if save_file_name:
+        plt.savefig(
+            save_file_name,
+            dpi = 300,
+            bbox_inches = "tight"
+        )
+
+    plt.show()
