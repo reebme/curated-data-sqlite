@@ -280,31 +280,56 @@ def pretty_histogram(data_column: pd.Series,
                     x_axis_title: str | None = None,
                     y_axis_title: str | None = None,
                     save_file_name: str | None = None):
+    '''
+    Plot a histogram of a numeric variable.
+
+    The number of bins may be specified explicitly 
+    or determined automatically 
+    using Matplotlib's default bin selection algorithm.
+
+    Parameters
+    ----------
+    data_column : pd.Series
+        Numeric data to be visualized.
+
+    bins_no : int | None, default = None
+        Number of histogram bins. If None, Matplotlib's
+        automatic bin selection ('auto') is used.
+
+    title : str | None, default = None
+        Plot title.
+
+    x_axis_title : str | None, default = None
+        Label for the x-axis.
+
+    y_axis_title : str | None, default = None
+        Label for the y-axis.
+
+    save_file_name : str | None, default = None
+        Path where the figure should be saved. If None,
+        the figure is displayed but not saved.
+
+    Returns
+    -------
+    None
+        Displays the histogram and optionally saves it to disk.
+    '''
     
     fig, ax = plt.subplots(figsize=(8, 4.5))
 
-    if bins_no:
-        ax.hist(
-            data_column,
-            color = '#708A81',
-            bins = bins_no
-        )
-    else:
-        ax.hist(
-            data_column,
-            color = '#708A81',
-            bins = 'auto'
-        )
+    # put the grid behind the plot
+    ax.set_axisbelow(True)
 
-    '''
+    # use bins when available
+    bins = bins_no if bins_no is not None else 'auto'
+
     ax.hist(
         data_column,
-        bins=bins_no,
-        histtype='step',
-        linewidth=2,
-        color='#708A81'
+        color = '#708A81',
+        edgecolor = '#D2CCC3',
+        linewidth = 0.5,
+        bins = bins
     )
-    '''
 
     # labels
     ax.set_title(
@@ -331,7 +356,7 @@ def pretty_histogram(data_column: pd.Series,
         True,
         color = '#D2CCC3',
         linewidth = 0.8,
-        alpha = 0.7
+        alpha = 0.7,
     )
 
     # save the plot
@@ -343,3 +368,5 @@ def pretty_histogram(data_column: pd.Series,
         )
 
     plt.show()
+    # prevent figures from accumulating in memory
+    plt.close(fig)
