@@ -275,7 +275,7 @@ def plot_cluster_map(
     plt.close(fig)
 
 def pretty_histogram(data_column: pd.Series,
-                    bins_no: int,
+                    bins_no: int | None = None,
                     title: str | None = None,
                     x_axis_title: str | None = None,
                     y_axis_title: str | None = None,
@@ -283,11 +283,28 @@ def pretty_histogram(data_column: pd.Series,
     
     fig, ax = plt.subplots(figsize=(8, 4.5))
 
+    if bins_no:
+        ax.hist(
+            data_column,
+            color = '#708A81',
+            bins = bins_no
+        )
+    else:
+        ax.hist(
+            data_column,
+            color = '#708A81',
+            bins = 'auto'
+        )
+
+    '''
     ax.hist(
         data_column,
-        color = '#708A81',
-        bins = bins_no
+        bins=bins_no,
+        histtype='step',
+        linewidth=2,
+        color='#708A81'
     )
+    '''
 
     # labels
     ax.set_title(
