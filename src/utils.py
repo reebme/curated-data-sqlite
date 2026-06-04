@@ -5,6 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.patches as mpatches
 
 def run_sql(database, query_file):
@@ -92,7 +93,7 @@ def plot_cluster_map(
     cluster_series: pd.Series,
     labels: dict[int, str],
     palette: dict[int, str],
-    projection: str = "ESRI:54030",    # default projection Robinson
+    projection: str = "ESRI:54048",
     title: str | None = None,
     legend_orientation: str  = 'vertical', # horizontal or vertical
     save_file_name: str | None = None
@@ -133,7 +134,6 @@ def plot_cluster_map(
     Notes
     -----
     - Uses the Natural Earth 1:10m country dataset.
-    - Uses Robinson projection (`ESRI:54030`).
     - Cluster identifiers are assumed to be integers.
     - Missing observations are displayed separately and are not
       expected in `labels` or `palette`.
@@ -179,8 +179,8 @@ def plot_cluster_map(
     figsize = (14, 6.5)
     background_color = "ghostwhite"
     
-    border_color = "#F4EFE8"
-    border_width = 0.15
+    border_color = "#E8E2D8"
+    border_width = 0.5
     
     fig, ax = plt.subplots(figsize = figsize, facecolor = background_color)
     ax.set_facecolor(background_color)
@@ -228,7 +228,7 @@ def plot_cluster_map(
         handles = handles,
         loc = "lower left",
         frameon = False,
-        fontsize = 10
+        fontsize = 14
     )
     
     '''
@@ -274,11 +274,13 @@ def plot_cluster_map(
     plt.show()
     plt.close(fig)
 
-def pretty_histogram(data_column: pd.Series,
+def pretty_histogram(
+                    data_column: pd.Series,
                     bins_no: int | None = None,
                     title: str | None = None,
                     x_axis_title: str | None = None,
                     y_axis_title: str | None = None,
+                    annotation: dict | None = None,
                     save_file_name: str | None = None):
     '''
     Plot a histogram of a numeric variable.
@@ -316,7 +318,7 @@ def pretty_histogram(data_column: pd.Series,
     '''
     
     fig, ax = plt.subplots(figsize=(8, 4.5))
-
+    
     # put the grid behind the plot
     ax.set_axisbelow(True)
 
@@ -347,6 +349,10 @@ def pretty_histogram(data_column: pd.Series,
         y_axis_title,
         fontsize=11
     )
+
+    # optional annotation
+    if annotation:
+        ax.annotate(**annotation)
 
     # styling
     for spine in ['top', 'right']:
