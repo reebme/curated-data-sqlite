@@ -89,6 +89,45 @@ def divide_range_into_buckets(no_buckets: int,
     
     return clusters.astype(int), edges
 
+def divide_range_into_Gaussian_buckets(
+    values: pd.Series
+):
+    data = values.to_frame(name='val')
+    
+    mu = values.mean()
+    sigma = values.std()
+
+    # min, -3sd, -2sd, mean -1sd, mean + 1sd, mean + 2sd, mean + 3sd, max
+    sigma_factors = np.concatenate((np.arange(-3, 0), np.arange(1, 4)))
+
+    data['cluster'] = -1
+
+    left = data['val'].min()
+    edges = [left]
+    for c, factor in enumerate(sigma_factors):
+        right = mu + factor * sigma
+        edges.append(right)
+        data.loc[((data['val'] >= left) & (data['val'] < right)), 'cluster'] = c
+        left = right
+    
+    right = data['val'].max()
+    if right > left:
+        edges.append(right)
+        data.loc[((data['val'] >= left) & (data['val'] < right)), 'cluster'] = c + 1
+
+    assert (data['cluster'] == -1).sum() == 0
+
+    return data['cluster'], edges
+
+def prepare_labels(edges, categories):
+    labels = [
+        (edges[i-1], edges[i] - 1) if i < len(edges) -1 
+        else (edges[i-1], edges[i]) 
+        for i in range(len(edges)) if i > 0
+    ]
+    labels = {i: f"{int(l[0])}–{int(l[1])}%" for (i, l) in enumerate(labels) if i in categories}
+    return labels
+
 def plot_cluster_map(
     cluster_series: pd.Series,
     labels: dict[int, str],
