@@ -219,6 +219,7 @@ def plot_cluster_map(
     background_color = "ghostwhite"
     
     border_color = "#E8E2D8"
+    # border_color = 'white'
     border_width = 0.5
     
     fig, ax = plt.subplots(figsize = figsize, facecolor = background_color)
@@ -240,7 +241,7 @@ def plot_cluster_map(
         )
     
     if title:
-            ax.set_title(title, fontsize = 16, pad = 14)
+            ax.set_title(title, fontsize = 18, pad = 14)
     
     # prepare the legend: clusters
     handles = [
@@ -267,7 +268,7 @@ def plot_cluster_map(
         handles = handles,
         loc = "lower left",
         frameon = False,
-        fontsize = 14
+        fontsize = 16
     )
     
     '''
