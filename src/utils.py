@@ -416,3 +416,97 @@ def pretty_histogram(
     plt.show()
     # prevent figures from accumulating in memory
     plt.close(fig)
+
+def pretty_hbar(
+    y_data: pd.Series,
+    x_data: pd.Series,
+    plot_title: str | None = None,
+    x_axis_title: str | None = None,
+    y_axis_title: str | None = None,
+    annotation: dict | None = None,
+    save_file: str | None = None
+):
+    """
+    Draw a styled horizontal bar chart.
+
+    Parameters
+    ----------
+    y_data : pd.Series
+        Values displayed on the y-axis (bar labels).
+
+    x_data : pd.Series
+        Numeric values determining bar lengths.
+
+    plot_title : str | None, default=None
+        Plot title.
+
+    x_axis_title : str | None, default=None
+        Label for the x-axis.
+
+    y_axis_title : str | None, default=None
+        Label for the y-axis.
+
+    annotation : dict | None, default=None
+        Keyword arguments passed directly to
+        ``matplotlib.axes.Axes.annotate``.
+
+    save_file : str | None, default=None
+        Path where the figure should be saved. If ``None``,
+        the figure is not saved.
+
+    Notes
+    -----
+    The chart uses a predefined visual style:
+    - horizontal bars
+    - hidden axis spines
+    - light vertical grid lines
+    - whitesmoke background
+    - optional annotation
+    - optional file export
+    """
+    fig, ax = plt.subplots(figsize=(10, 12))
+
+    ax.barh(y_data,
+            x_data,
+            color = "#708A81")
+
+    # labels
+    if plot_title:
+        ax.set_title(plot_title,
+                    fontsize = 16,
+                    pad = 12)
+    if x_axis_title:
+        ax.set_xlabel(x_axis_title,
+                 fontsize = 14)
+    if y_axis_title:
+        ax.set_ylabel(y_axis_title,
+                     fontsize = 14)
+        
+    # pretty stuff
+    # remove box borders
+    for spine in ['top', 'bottom', 'right', 'left']:
+        ax.spines[spine].set_visible(False)
+    
+    # grid, only vertical bars
+    ax.grid( axis = 'x',
+        color='#D2CCC3',
+        linewidth=0.8,
+        alpha=0.7
+    )
+
+    # background color
+    fig.patch.set_facecolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
+
+    # optional annotation
+    if annotation:
+        ax.annotate(**annotation)
+
+    if save_file:
+        plt.savefig(
+            save_file,
+            dpi = 300,
+            bbox_inches = "tight"
+        )
+        
+    plt.show()
