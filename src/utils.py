@@ -395,6 +395,11 @@ def pretty_histogram(
         ax.annotate(**annotation)
 
     # styling
+
+    # background color
+    fig.patch.set_facecolor('whitesmoke')
+    ax.set_facecolor('whitesmoke')
+    
     for spine in ['top', 'right']:
         ax.spines[spine].set_visible(False)
     
@@ -423,7 +428,8 @@ def pretty_hbar(
     plot_title: str | None = None,
     x_axis_title: str | None = None,
     y_axis_title: str | None = None,
-    annotation: dict | None = None,
+    vertical_lines: list[float] | None = None,
+    annotation: dict | list[dict] | None = None,
     save_file: str | None = None
 ):
     """
@@ -445,6 +451,9 @@ def pretty_hbar(
 
     y_axis_title : str | None, default=None
         Label for the y-axis.
+
+    vertical_lines: list[float] | None = None
+        Optional dashed vertical lines at values in the list.
 
     annotation : dict | None, default=None
         Keyword arguments passed directly to
@@ -498,9 +507,24 @@ def pretty_hbar(
     fig.patch.set_facecolor('whitesmoke')
     ax.set_facecolor('whitesmoke')
 
-    # optional annotation
+    if vertical_lines:
+        for x in vertical_lines:
+            ax.axvline(
+                x = x,
+                linestyle = '--',
+                linewidth = 1,
+                # color = '#1237c3',    # blue
+                color = '#0b5f6a',    # dark teal
+                alpha = 0.5
+            )
+
+    # optional annotations
     if annotation:
-        ax.annotate(**annotation)
+        if isinstance(annotation, dict):
+            ax.annotate(**annotation)
+        else:
+            for a in annotation:
+                ax.annotate(**a)
 
     if save_file:
         plt.savefig(
