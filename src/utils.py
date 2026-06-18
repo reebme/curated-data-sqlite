@@ -320,6 +320,7 @@ def pretty_histogram(
                     title: str | None = None,
                     x_axis_title: str | None = None,
                     y_axis_title: str | None = None,
+                    vertical_lines: list[float] | None = None,
                     annotation: dict | None = None,
                     save_file_name: str | None = None):
     '''
@@ -372,6 +373,17 @@ def pretty_histogram(
         linewidth = 0.5,
         bins = bins
     )
+
+    if vertical_lines is not None:
+        for x in vertical_lines:
+            ax.axvline(
+                x = x,
+                linestyle = '--',
+                linewidth = 1,
+                # color = '#1237c3',    # blue
+                color = '#0b5f6a',    # dark teal
+                alpha = 0.5
+            )
 
     # labels
     ax.set_title(
