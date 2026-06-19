@@ -321,6 +321,7 @@ def pretty_histogram(
                     x_axis_title: str | None = None,
                     y_axis_title: str | None = None,
                     vertical_lines: list[float] | None = None,
+                    density_fn: Callable[[np.ndarray], np.ndarray] | None = None,
                     annotation: dict | None = None,
                     save_file_name: str | None = None):
     '''
@@ -347,6 +348,9 @@ def pretty_histogram(
 
     y_axis_title : str | None, default = None
         Label for the y-axis.
+        
+    vertical_lines: list[float] | None = None
+        Optional dashed vertical lines at values in the list.
 
     save_file_name : str | None, default = None
         Path where the figure should be saved. If None,
@@ -365,20 +369,35 @@ def pretty_histogram(
 
     # use bins when available
     bins = bins_no if bins_no is not None else 'auto'
-
-    ax.hist(
+    
+    counts, bin_edges, _ = ax.hist(
         data_column,
-        color = '#708A81',
-        edgecolor = '#D2CCC3',
-        linewidth = 0.5,
-        bins = bins
+        color='#708A81',
+        edgecolor='#D2CCC3',
+        linewidth=0.5,
+        bins=bins
     )
+    
+    if density_fn is not None:
+        x = np.linspace(bin_edges[0], bin_edges[-1], 500)
+        bin_width = bin_edges[1] - bin_edges[0]
+        y = density_fn(x) * len(data_column) * bin_width
+
+        ax.plot(
+            x,
+            y,
+            linewidth=1,
+            color='#0b5f6a',
+            linestyle=(0, (5, 10)),
+            alpha=0.5
+        )
 
     if vertical_lines is not None:
         for x in vertical_lines:
             ax.axvline(
                 x = x,
                 linestyle = '--',
+                #linestyle=(0, (5, 10)),
                 linewidth = 1,
                 # color = '#1237c3',    # blue
                 color = '#0b5f6a',    # dark teal
