@@ -320,8 +320,9 @@ def pretty_histogram(
                     title: str | None = None,
                     x_axis_title: str | None = None,
                     y_axis_title: str | None = None,
-                    vertical_lines: list[float] | None = None,
-                    density_fn: Callable[[np.ndarray], np.ndarray] | None = None,
+                    density: bool | None = None,
+                    vertical_lines: list[tuple(float, str)] | None = None,
+                    density_fn: list[tuple[Callable[[np.ndarray], np.ndarray], str, str, str]] | None = None,
                     annotation: dict | None = None,
                     save_file_name: str | None = None):
     '''
@@ -369,39 +370,52 @@ def pretty_histogram(
 
     # use bins when available
     bins = bins_no if bins_no is not None else 'auto'
-    
+   
+    # density
+    if density is not None:
+        density = True
+    else: density = False
+
     counts, bin_edges, _ = ax.hist(
         data_column,
-        color='#708A81',
+        #color='#708A81',
+        color='#a5c4b6',
         edgecolor='#D2CCC3',
+        #edgecolor='ghostwhite',
         linewidth=0.5,
-        bins=bins
+        bins=bins,
+        density = density
     )
     
     if density_fn is not None:
         x = np.linspace(bin_edges[0], bin_edges[-1], 500)
-        bin_width = bin_edges[1] - bin_edges[0]
-        y = density_fn(x) * len(data_column) * bin_width
+        
+        for f, color, label, linestyle in density_fn:
+            y = f(x)
 
-        ax.plot(
-            x,
-            y,
-            linewidth=1,
-            color='#0b5f6a',
-            linestyle=(0, (5, 10)),
-            alpha=0.5
-        )
+            ax.plot(
+                x,
+                y,
+                linewidth=0.75,
+                color=color,
+                linestyle=linestyle,
+                label = label
+                #linestyle = '--',
+                #alpha=0.75
+            )
+        
+        ax.legend()
 
     if vertical_lines is not None:
-        for x in vertical_lines:
+        for x, color in vertical_lines:
             ax.axvline(
                 x = x,
                 linestyle = '--',
                 #linestyle=(0, (5, 10)),
                 linewidth = 1,
                 # color = '#1237c3',    # blue
-                color = '#0b5f6a',    # dark teal
-                alpha = 0.5
+                color = color,    # dark teal
+                alpha = 0.75
             )
 
     # labels
