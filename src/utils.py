@@ -389,9 +389,14 @@ def pretty_histogram(
     
     if density_fn is not None:
         x = np.linspace(bin_edges[0], bin_edges[-1], 500)
+
+        hist_max = counts.max()
+        y_cap = hist_max * 1.1
         
         for f, color, label, linestyle in density_fn:
             y = f(x)
+            # cap the function which blow up
+            y = np.where(y <= y_cap, y, np.nan)
 
             ax.plot(
                 x,
