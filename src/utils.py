@@ -8,6 +8,8 @@ from matplotlib.colors import ListedColormap
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.patches as mpatches
 
+from pathlib import Path
+
 def run_sql(database, query_file):
     with sqlite3.connect(database) as conn:
         conn.execute('pragma foreign_keys = on;')
@@ -195,7 +197,14 @@ def plot_cluster_map(
         f"Clusters in labels and palette not equal"
     )
 
-    world_file = '../data/raw/geodata/ne_10m_admin_0_countries.zip'
+    #world_file = '../data/raw/geodata/ne_10m_admin_0_countries.zip'
+    world_file = (
+        Path(__file__).resolve().parent.parent
+        / "data"
+        / "raw"
+        / "geodata"
+        / "ne_10m_admin_0_countries.zip"
+    )
 
     # import world data to draw countries
     world = gpd.read_file(world_file)
