@@ -4,25 +4,7 @@ __pycache__/
 
 # Jupyter
 .ipynb_checkpoints/
-iframe_figures/
 
-# SQLite
-*.db
-*.sqlite
-
-# OS
-.DS_Store
-
-# raw data
+# raw and processed data
 data/raw/
 data/processed/
-
-# colors
-src/full_palette.py
-src/palettes.py
-
-# notes
-notes/
-
-# articles
-articles/
