@@ -15,6 +15,8 @@
 
 pragma foreign_keys = ON;
 
+begin;
+
 create table if not exists countries(
     iso3_id text primary key,
     country_name text not null
@@ -116,3 +118,5 @@ create table if not exists series_values(
             or (sv_date_precision = 'day')
     )
 );
+
+commit;
