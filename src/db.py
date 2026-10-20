@@ -13,7 +13,12 @@ def connection(db_file: Path):
     # resolve a path in case it's relative and change into uri format
     uri_db_file = db_file.resolve().as_uri()
     # connect do a db if it exists
-    conn = sqlite3.connect(f"{uri_db_file}?mode=rw", uri=True)
+    conn = sqlite3.connect(
+            f"{uri_db_file}?mode=rw", 
+            uri=True,
+            autocommit=sqlite3.LEGACY_TRANSACTION_CONTROL,
+            isolation_level="DEFERRED"
+    )
     # ensure foreign keys
     try:
         conn.execute("pragma foreign_keys = on;")
