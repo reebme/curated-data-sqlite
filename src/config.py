@@ -13,3 +13,5 @@ FINDEX_DATA360 = PROJ_ROOT_DIR / "data" / "raw" / "WB_FINDEX_20_IV_2026.csv"
 # Global Findex from databank.worldbank.org for stratification codes and descriptions
 # The series are fin45 group
 FINDEX_FIN45 = PROJ_ROOT_DIR / "data" / "raw" / "fin45_Data.csv"
+# databank.worldbank.org underscore series
+FINDEX_UNDERSCORE_SERIES = PROJ_ROOT_DIR / "data" / "raw" / "underscore_series_Data.csv"
